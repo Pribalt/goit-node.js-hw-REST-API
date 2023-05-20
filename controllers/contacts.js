@@ -1,39 +1,31 @@
-const { json } = require("express");
-const {
-  listContacts,
-  getContactById,
-  removeContactById,
-  addContact,
-  updateContactById,
-} = require("../models/contacts");
+const { Contact } = require("../models/contact");
 
 const { HttpError, asyncWrapper } = require("../utils");
 
 const getContacts = asyncWrapper(async (req, res) => {
-  const contacts = await listContacts();
-
+  const contacts = await Contact.find();
   res.json(contacts);
 });
 
 const getOneContact = asyncWrapper(async (req, res) => {
   const { contactId } = req.params;
-  const oneContct = await getContactById(contactId);
+  const oneContct = await Contact.findById(contactId);
 
   if (!oneContct) {
     throw new HttpError(404, "Not found");
   }
+
   res.json(oneContct);
 });
 
 const addNewContact = asyncWrapper(async (req, res) => {
-  const newContact = await addContact(req.body);
-
+  const newContact = await Contact.create(req.body);
   res.status(201).json(newContact);
 });
 
 const deleteContact = asyncWrapper(async (req, res) => {
   const { contactId } = req.params;
-  const deleteContactId = await removeContactById(contactId);
+  const deleteContactId = await Contact.findByIdAndRemove(contactId);
 
   if (!deleteContactId) {
     throw new HttpError(404, "Not found");
@@ -46,7 +38,9 @@ const deleteContact = asyncWrapper(async (req, res) => {
 
 const updateContact = asyncWrapper(async (req, res) => {
   const { contactId } = req.params;
-  const updateContact = await updateContactById(contactId, req.body);
+  const updateContact = await Contact.findByIdAndUpdate(contactId, req.body, {
+    new: true,
+  });
 
   if (!updateContact) {
     throw new HttpError(404, "Not found");
@@ -55,10 +49,28 @@ const updateContact = asyncWrapper(async (req, res) => {
   res.json(updateContact);
 });
 
+const updateFavoriteContact = asyncWrapper(async (req, res) => {
+  const { contactId } = req.params;
+  const updateFavoriteContact = await Contact.findByIdAndUpdate(
+    contactId,
+    req.body,
+    {
+      new: true,
+    }
+  );
+
+  if (!updateFavoriteContact) {
+    throw new HttpError(404, "Not found");
+  }
+
+  res.json(updateFavoriteContact);
+});
+
 module.exports = {
   getContacts,
   getOneContact,
   addNewContact,
   deleteContact,
   updateContact,
+  updateFavoriteContact,
 };
