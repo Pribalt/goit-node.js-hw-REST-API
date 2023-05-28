@@ -5,7 +5,7 @@ const validateBody = (schemas) => {
     const { error } = schemas.validate(req.body);
 
     if (error) {
-      next(new HttpError(404, error.message));
+      return next(new HttpError(404, error.message));
     }
     next();
   };
