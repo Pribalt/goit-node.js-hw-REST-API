@@ -44,10 +44,44 @@ const login = asyncWrapper(async (req, res) => {
   };
 
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+  await User.findByIdAndUpdate(user._id, { token });
 
   res.json({
     token,
   });
 });
 
-module.exports = { register, login };
+const getCurrent = asyncWrapper(async (req, res) => {
+  const { email, name, subscription } = req.user;
+
+  res.json({
+    email,
+    name,
+    subscription,
+  });
+});
+
+const logout = asyncWrapper(async (req, res) => {
+  const { _id } = req.user;
+  await User.findByIdAndUpdate(_id, { token: "" });
+
+  res.json({
+    message: "Logout success",
+  });
+});
+
+const updateSubscription = asyncWrapper(async (req, res) => {
+  const { _id } = req.user;
+
+  const updateUserSubscription = await User.findByIdAndUpdate(_id, req.body, {
+    new: true,
+  });
+
+  if (!updateUserSubscription) {
+    throw new HttpError(404);
+  }
+
+  res.json(updateUserSubscription);
+});
+
+module.exports = { register, login, getCurrent, logout, updateSubscription };
